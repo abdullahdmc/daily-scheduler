@@ -1,0 +1,39 @@
+:root {
+  --bg: #fffdf8; --text: #2c2c2a; --muted: #5f5e5a; --line: #ece6d8;
+  --note: #FAEEDA; --note-head: #FAC775; --note-border: #EF9F27; --note-text: #633806; --link: #854F0B;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1d1c1a; --text: #f1efe8; --muted: #b4b2a9; --line: #3a3833; --link: #FAC775; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.65 "Segoe UI", -apple-system, BlinkMacSystemFont, Ubuntu, "Helvetica Neue", Arial, sans-serif; }
+a { color: var(--link); }
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+header { border-bottom: 1px solid var(--line); }
+header .wrap { display: flex; align-items: center; gap: 12px; padding-top: 14px; padding-bottom: 14px; flex-wrap: wrap; }
+header img { width: 36px; height: 36px; }
+header .name { font-weight: 600; font-size: 18px; text-decoration: none; color: var(--text); }
+header nav { margin-left: auto; display: flex; gap: 18px; font-size: 15px; }
+main { padding: 40px 0 56px; }
+h1 { font-size: 34px; line-height: 1.2; margin: 0 0 12px; }
+h2 { font-size: 22px; margin: 36px 0 8px; }
+h3 { font-size: 18px; margin: 24px 0 4px; }
+.lead { font-size: 19px; color: var(--muted); margin: 0 0 24px; }
+.btn { display: inline-block; background: var(--note-text); color: var(--note); text-decoration: none; font-weight: 600; padding: 11px 20px; border-radius: 8px; }
+.btn:hover { filter: brightness(1.15); }
+.hero { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
+.hero img { width: 100%; max-width: 380px; justify-self: center; }
+.shots { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 16px; }
+.shots img { width: 100%; max-width: 320px; }
+ul { padding-left: 22px; }
+li { margin: 4px 0; }
+.box { background: var(--note); color: var(--note-text); border: 1px solid var(--note-border); border-radius: 10px; padding: 14px 18px; margin: 20px 0; }
+.box a { color: var(--note-text); }
+.meta { color: var(--muted); font-size: 15px; }
+footer { border-top: 1px solid var(--line); padding: 20px 0 32px; color: var(--muted); font-size: 14px; }
+footer nav { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+@media (max-width: 640px) {
+  .hero { grid-template-columns: 1fr; }
+  h1 { font-size: 28px; }
+  header nav { margin-left: 0; width: 100%; }
+}
