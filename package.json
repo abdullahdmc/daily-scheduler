@@ -6,7 +6,7 @@
   "main": "src/main/main.js",
   "author": {
     "name": "Md Abdullah Saeed Khan",
-    "email": "abdullahdmc@users.noreply.github.com"
+    "email": "67544230+abdullahdmc@users.noreply.github.com"
   },
   "license": "MIT",
   "homepage": "https://github.com/abdullahdmc/daily-scheduler",
@@ -76,7 +76,7 @@
       ],
       "category": "Utility",
       "icon": "build/icon.png",
-      "maintainer": "Md Abdullah Saeed Khan <abdullahdmc@users.noreply.github.com>"
+      "maintainer": "Md Abdullah Saeed Khan <67544230+abdullahdmc@users.noreply.github.com>"
     },
     "publish": [
       {
