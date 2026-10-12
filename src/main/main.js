@@ -8,6 +8,7 @@ const { createStore } = require('./store');
 const { createAuth } = require('./google-auth');
 const { sync } = require('./google-sync');
 const { setLaunchAtLogin } = require('./autostart');
+const desktopPin = require('./desktop-pin');
 
 const REPO_URL = 'https://github.com/abdullahdmc/daily-scheduler';
 const TWO_INCHES = 192; // Electron positions in device-independent pixels, 96 per inch
@@ -149,14 +150,17 @@ function createNote() {
     fullscreenable: false,
     skipTaskbar: true,
     hasShadow: false,
-    alwaysOnTop: !!s.onTop,
+    alwaysOnTop: !!s.aboveApps,
     show: false,
     title: 'Daily scheduler',
     icon: ICON,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, sandbox: true },
   });
   note.loadFile(path.join(RENDERER, 'index.html'));
-  note.once('ready-to-show', () => note.showInactive());
+  note.once('ready-to-show', () => {
+    note.showInactive();
+    desktopPin.setup(note, () => !!store.state.settings.aboveApps);
+  });
   note.on('moved', () => {
     const b = note.getBounds();
     Object.assign(store.state.settings, { x: b.x, y: b.y });
@@ -172,11 +176,6 @@ function showNote() {
   note.focus();
 }
 
-function toggleNote() {
-  if (note.isVisible()) note.hide();
-  else showNote();
-}
-
 function createTray() {
   let img = nativeImage.createFromPath(ICON);
   img = img.resize({ width: process.platform === 'darwin' ? 18 : 16 });
@@ -189,7 +188,8 @@ function createTray() {
     { type: 'separator' },
     { label: 'Quit Daily scheduler', click: () => app.quit() },
   ]));
-  tray.on('click', toggleNote);
+  // Brings the note in front of your apps until you click somewhere else.
+  tray.on('click', showNote);
 }
 
 function resetPosition() {
@@ -311,9 +311,9 @@ function registerIpc() {
 
   ipcMain.handle('settings:set', (_e, patch) => {
     const s = store.state.settings;
-    const allowed = ['theme', 'collapsed', 'onTop', 'launchAtLogin'];
+    const allowed = ['theme', 'collapsed', 'aboveApps', 'launchAtLogin'];
     for (const k of allowed) if (k in patch) s[k] = patch[k];
-    if ('onTop' in patch) note.setAlwaysOnTop(!!s.onTop);
+    if ('aboveApps' in patch) desktopPin.applyMode(note, !!s.aboveApps);
     if ('launchAtLogin' in patch) setLaunchAtLogin(!!s.launchAtLogin);
     changed({ syncSoon: false });
   });

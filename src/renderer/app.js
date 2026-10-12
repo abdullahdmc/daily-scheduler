@@ -142,7 +142,7 @@ function renderSettings() {
 
   $('settings').innerHTML = `
     <div><h3>Window</h3>
-      <div class="set-row"><label><input type="checkbox" data-set="onTop"${s.onTop ? ' checked' : ''}>Keep on top of other windows</label></div>
+      <div class="set-row"><label><input type="checkbox" data-set="aboveApps"${s.aboveApps ? ' checked' : ''}>Show above other apps</label></div>
       <div class="set-row"><label><input type="checkbox" data-set="launchAtLogin"${s.launchAtLogin ? ' checked' : ''}>Open when the computer starts</label></div>
     </div>
     <div><h3>Google Tasks</h3>${google}</div>

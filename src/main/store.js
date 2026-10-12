@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS = {
   x: null,
   y: null,
   collapsed: false,
-  onTop: true,
+  aboveApps: false,
   launchAtLogin: true,
   firstRunDone: false,
 };

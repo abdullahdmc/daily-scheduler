@@ -1,6 +1,6 @@
 # Daily scheduler
 
-A small sticky note for your desktop that shows today's tasks. It opens when your computer starts, sits on the right of the screen, and drops down your list when you click it. Works on Windows, macOS and Linux.
+A small sticky note for your desktop that shows today's tasks. It opens when your computer starts, sits on the right of the desktop behind your open apps, and drops down your list when you click it. Works on Windows, macOS and Linux.
 
 <p align="center"><img src="docs/screenshot-today.png" width="380" alt="Daily scheduler showing today's tasks"></p>
 
@@ -13,6 +13,7 @@ A small sticky note for your desktop that shows today's tasks. It opens when you
 - **Reminders:** a pop-up at the time you set, with **Mark done** and **Snooze 10 min**. If your computer was off or asleep, missed reminders show as soon as it's back.
 - **Edit, delete and undo:** double-click a task (or its pencil) to edit it. Deleting a task gives you a few seconds to undo.
 - **Your choice of colour:** yellow, pink, blue, green or lavender.
+- **Lives on the desktop:** the note stays behind your apps, so you see it when you minimise them or show the desktop (on Windows it stays visible after Win+D). Click the tray icon to bring it forward, or turn on **Show above other apps** in Settings.
 - **Resizable:** drag the left edge to make the note wider, and drag the dots to move it anywhere.
 - **Optional Google Tasks sync:** sign in with Google to see and tick your tasks on your phone. The app works fully without signing in.
 - **Backup:** export your tasks to a file and import them on another computer.
