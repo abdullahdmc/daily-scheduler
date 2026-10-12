@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'">
+<title>Reminder</title>
+<link rel="stylesheet" href="reminder.css">
+</head>
+<body>
+<div id="card">
+  <div class="top">
+    <span class="icon"><svg viewBox="0 0 24 24"><path d="M10 5a2 2 0 1 1 4 0 7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1"/></svg></span>
+    <span id="when"></span>
+    <button id="x" class="x" aria-label="Dismiss" title="Dismiss"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div id="title" title="Open the note"></div>
+  <div class="btns">
+    <button id="done">Mark done</button>
+    <button id="snooze">Snooze 10 min</button>
+  </div>
+</div>
+<script src="reminder.js"></script>
+</body>
+</html>

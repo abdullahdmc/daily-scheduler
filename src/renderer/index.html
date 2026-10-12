@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:">
+<title>Daily scheduler</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="note">
+  <div id="grab" title="Drag to resize"><div></div></div>
+
+  <div id="hd">
+    <div class="hd-row">
+      <span class="drag" title="Drag to move">
+        <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
+      </span>
+      <span id="title"></span>
+      <span id="count"></span>
+      <button class="ib" data-a="pal" aria-label="Change colour" title="Colour">
+        <svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 1 0-18c4.97 0 9 3.58 9 8 0 2.5-2 4-4.5 4H15a2 2 0 0 0-1.5 3.3c.4.5.3 1.2-.1 1.6-.4.3-.9.5-1.4.5z"/><circle cx="7.5" cy="10.5" r="1" class="fill"/><circle cx="12" cy="7.5" r="1" class="fill"/><circle cx="16.5" cy="10.5" r="1" class="fill"/></svg>
+      </button>
+      <button class="ib" data-a="settings" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+      <span id="chev" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>
+      </span>
+    </div>
+    <div id="pal" hidden></div>
+    <div id="bar"><div id="prog"></div></div>
+  </div>
+
+  <div id="body">
+    <div id="settings" hidden></div>
+    <div id="list"></div>
+
+    <div id="home">
+      <div id="form" hidden>
+        <input id="inp" maxlength="500" placeholder="Call the bank about the card renewal" autocomplete="off">
+        <div id="err" hidden>Enter a task first</div>
+        <div class="chips">
+          <button class="chip" id="rt" data-a="rt">
+            <svg viewBox="0 0 24 24"><path d="M4 12V9a3 3 0 0 1 3-3h13l-3-3m3 3l-3 3M20 12v3a3 3 0 0 1-3 3H4l3 3m-3-3l3-3"/></svg>Routine
+          </button>
+          <button class="chip" id="dt" data-a="dt">
+            <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg><span id="dtl">Today</span>
+          </button>
+          <button class="chip" id="ut" data-a="ut" hidden>
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span id="utl">No end</span>
+          </button>
+          <button class="chip" id="tm" data-a="tm">
+            <svg viewBox="0 0 24 24"><path d="M10 5a2 2 0 1 1 4 0 7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1"/></svg><span id="tml">Remind</span>
+          </button>
+          <span class="grow"></span>
+          <button class="chip" data-a="cancel" aria-label="Cancel" title="Cancel">
+            <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+          <button class="chip on" data-a="add">
+            <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg><span id="addl">Add</span>
+          </button>
+        </div>
+        <div id="hint"></div>
+        <div id="tbox" hidden>
+          Remind me at <input id="tin" type="time" value="09:00">
+          <button class="chip" data-a="tset">Set</button>
+          <button class="chip" data-a="tclr">No reminder</button>
+        </div>
+        <div id="cal" hidden>
+          <div class="cal-hd">
+            <button class="ib" data-a="mprev" aria-label="Previous month"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <span id="mlabel"></span>
+            <button class="ib" data-a="mnext" aria-label="Next month"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+          </div>
+          <div id="grid"></div>
+          <div id="calfoot" hidden><button class="chip" data-a="noend">No end date</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="upl" hidden></div>
+
+    <div id="foot">
+      <button class="ib text" data-a="up">
+        <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16M8 15h2"/></svg><span id="upn"></span>
+      </button>
+      <span id="toast"></span>
+      <button id="plus" data-a="plus" aria-label="Add task" title="Add task">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

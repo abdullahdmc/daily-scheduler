@@ -1,0 +1,94 @@
+{
+  "name": "daily-scheduler",
+  "productName": "Daily scheduler",
+  "version": "1.0.0",
+  "description": "A sticky-note style daily task scheduler for Windows, macOS and Linux.",
+  "main": "src/main/main.js",
+  "author": {
+    "name": "Md Abdullah Saeed Khan",
+    "email": "abdullahdmc@users.noreply.github.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/abdullahdmc/daily-scheduler",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abdullahdmc/daily-scheduler.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test \"test/*.test.js\"",
+    "icon": "node scripts/make-icon.js",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "io.github.abdullahdmc.dailyscheduler",
+    "productName": "Daily scheduler",
+    "copyright": "Copyright ?? 2026 Md Abdullah Saeed Khan",
+    "files": [
+      "src/**/*",
+      "build/icon.png",
+      "config/*.json",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "artifactName": "Daily-scheduler-${version}-${os}-${arch}.${ext}",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Daily scheduler"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png",
+      "extendInfo": {
+        "LSUIElement": true
+      }
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png",
+      "maintainer": "Md Abdullah Saeed Khan <abdullahdmc@users.noreply.github.com>"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "abdullahdmc",
+        "repo": "daily-scheduler",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "devDependencies": {
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3"
+  }
+}

@@ -1,0 +1,5 @@
+node_modules/
+dist/
+config/google.json
+*.log
+.DS_Store
