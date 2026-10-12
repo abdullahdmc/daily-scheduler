@@ -94,6 +94,7 @@ function render() {
   applyTheme();
   note.classList.toggle('collapsed', !!S.settings.collapsed);
   $('pal').hidden = !ui.palOpen;
+  $('notice').hidden = !!S.settings.startupNoticeSeen;
 
   const d = parseYmd(S.today);
   $('title').textContent = `Today · ${d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}`;
@@ -307,6 +308,8 @@ async function act(a, el) {
       if (r) { ui.backupMsg = r.error || `Imported ${r.count} task${r.count === 1 ? '' : 's'}`; render(); }
       break;
     }
+    case 'nkeep': await window.api.setSettings({ startupNoticeSeen: true }); break;
+    case 'noff': await window.api.setSettings({ startupNoticeSeen: true, launchAtLogin: false }); break;
     case 'repo': window.api.openRepo(); break;
     case 'hide': window.api.hide(); break;
     case 'quit': window.api.quit(); break;

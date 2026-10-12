@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS = {
   aboveApps: false,
   launchAtLogin: true,
   firstRunDone: false,
+  startupNoticeSeen: false,
 };
 
 function createStore(dir) {

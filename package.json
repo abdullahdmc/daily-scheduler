@@ -1,7 +1,7 @@
 {
   "name": "daily-scheduler",
   "productName": "Daily scheduler",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A sticky-note style daily task scheduler for Windows, macOS and Linux.",
   "main": "src/main/main.js",
   "author": {
@@ -52,7 +52,8 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "shortcutName": "Daily scheduler"
+      "shortcutName": "Daily scheduler",
+      "include": "build/installer.nsh"
     },
     "mac": {
       "target": [

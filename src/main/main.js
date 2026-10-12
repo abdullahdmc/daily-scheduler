@@ -37,9 +37,10 @@ function start() {
 
   if (!s.firstRunDone) {
     s.firstRunDone = true;
-    setLaunchAtLogin(s.launchAtLogin);
     store.save();
   }
+  // Re-applied on every start: updating the app runs the old uninstaller, which removes it.
+  setLaunchAtLogin(s.launchAtLogin);
 
   dayCheck();
   createNote();
@@ -311,7 +312,7 @@ function registerIpc() {
 
   ipcMain.handle('settings:set', (_e, patch) => {
     const s = store.state.settings;
-    const allowed = ['theme', 'collapsed', 'aboveApps', 'launchAtLogin'];
+    const allowed = ['theme', 'collapsed', 'aboveApps', 'launchAtLogin', 'startupNoticeSeen'];
     for (const k of allowed) if (k in patch) s[k] = patch[k];
     if ('aboveApps' in patch) desktopPin.applyMode(note, !!s.aboveApps);
     if ('launchAtLogin' in patch) setLaunchAtLogin(!!s.launchAtLogin);

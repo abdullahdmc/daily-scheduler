@@ -33,7 +33,15 @@ Download the latest version from the [Releases page](https://github.com/abdullah
 | macOS | `Daily-scheduler-…-mac-universal.dmg` | Drag the app to Applications. The first time, right-click it and choose **Open**, because the app isn't notarised by Apple yet. |
 | Linux | `.AppImage` or `.deb` | AppImage: make it executable (`chmod +x`) and run it. Debian/Ubuntu: `sudo apt install ./Daily-scheduler-…-linux-amd64.deb` |
 
-After the first launch, the app opens automatically when you log in. You can turn that off in **Settings**, the gear icon on the note. The app also has a tray icon (the menu bar on macOS) for showing or hiding the note, or for quitting. If you hide the note and can't see a tray icon (some Linux desktops hide them), open the app again from your app menu and the note comes back.
+The app sets itself to open when you log in. It tells you this the first time it starts, with a button to turn it off, and you can change it later in **Settings**, the gear icon on the note. The app also has a tray icon (the menu bar on macOS) for showing or hiding the note, or for quitting. If you hide the note and can't see a tray icon (some Linux desktops hide them), open the app again from your app menu and the note comes back.
+
+### Uninstalling
+
+- **Windows:** Settings → Apps → Installed apps → Daily scheduler → Uninstall. This also removes the "open when the computer starts" setting.
+- **macOS:** quit the app from the menu bar icon, then drag it from Applications to the Trash. Remove it from System Settings → General → Login Items if it's still listed.
+- **Linux:** `sudo apt remove daily-scheduler` for the `.deb`, or delete the `.AppImage`. Then delete `~/.config/autostart/daily-scheduler.desktop`.
+
+Your tasks stay in the data folder listed below until you delete it.
 
 ## Using Google Tasks (optional)
 
@@ -87,6 +95,10 @@ git push origin v1.0.0
 ```
 
 GitHub Actions builds the Windows, macOS and Linux installers and attaches them to a release for that tag.
+
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org). This project has applied, and signing starts with the first release after approval. See the full [code signing policy](https://abdullahdmc.github.io/daily-scheduler/code-signing.html), including team roles and privacy.
 
 ## Credits
 

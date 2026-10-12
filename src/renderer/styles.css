@@ -88,6 +88,7 @@ svg .fill { fill: currentColor; stroke: none; }
 #plus { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--ic); background: var(--hd); color: var(--tx); display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; flex: none; }
 #plus:hover { filter: brightness(.96); }
 
+#notice { padding: 10px 12px; border-bottom: 1px dashed var(--bd); background: var(--hd); font-size: 12px; }
 #settings { padding: 10px 12px; border-bottom: 1px dashed var(--bd); display: flex; flex-direction: column; gap: 10px; }
 #settings h3 { margin: 0 0 4px; font-size: 11px; font-weight: 600; text-transform: none; opacity: .75; }
 .set-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }

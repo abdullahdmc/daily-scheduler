@@ -28,7 +28,16 @@ function setLaunchAtLogin(enabled) {
     ].join('\n'));
     return;
   }
+  if (process.platform === 'win32') {
+    // A fixed registry name lets the uninstaller remove it (see build/installer.nsh).
+    // Versions before 1.0.2 used Electron's default name, so clear that one too.
+    app.setLoginItemSettings({ openAtLogin: false });
+    app.setLoginItemSettings({ openAtLogin: enabled, name: WINDOWS_RUN_NAME });
+    return;
+  }
   app.setLoginItemSettings({ openAtLogin: enabled });
 }
+
+const WINDOWS_RUN_NAME = 'Daily scheduler';
 
 module.exports = { setLaunchAtLogin };
