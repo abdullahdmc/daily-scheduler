@@ -270,9 +270,9 @@ async function runSync() {
     await sync(store.state, googleApi);
     syncError = null;
   } catch (err) {
-    syncError = err instanceof TypeError
-      ? 'Can\'t reach Google right now. It\'ll try again in a few minutes.'
-      : err.message || 'Sync failed';
+    if (err instanceof TypeError) syncError = 'Can\'t reach Google right now. It\'ll try again in a few minutes.';
+    else if (err.status === 403) syncError = 'Google Tasks access was turned off. Sign out, then sign in again and allow access to your tasks.';
+    else syncError = err.message || 'Sync failed';
   } finally {
     syncing = false;
     store.save();

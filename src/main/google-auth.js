@@ -9,7 +9,8 @@ const fs = require('fs');
 const path = require('path');
 const { shell, safeStorage } = require('electron');
 
-const SCOPES = ['openid', 'email', 'https://www.googleapis.com/auth/tasks'];
+const TASKS_SCOPE = 'https://www.googleapis.com/auth/tasks';
+const SCOPES = ['openid', 'email', TASKS_SCOPE];
 const AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
@@ -99,6 +100,13 @@ function createAuth(userDataDir) {
           const tok = await tokenRequest({
             code, code_verifier: verifier, grant_type: 'authorization_code', redirect_uri: redirectUri,
           });
+          // Google lets people untick individual permissions; without Tasks access sync can't work.
+          if (!String(tok.scope || '').split(' ').includes(TASKS_SCOPE)) {
+            fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(tok.refresh_token || tok.access_token)}`, { method: 'POST' }).catch(() => {});
+            done('Daily scheduler needs access to Google Tasks to sync. Go back to the app, choose Sign in with Google again, and tick the box that allows access to your tasks.');
+            reject(new Error('Google Tasks access wasn\'t allowed. Sign in again and tick the box for your tasks.'));
+            return;
+          }
           session = {
             refresh_token: tok.refresh_token,
             access_token: tok.access_token,
