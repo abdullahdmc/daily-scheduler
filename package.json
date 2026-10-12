@@ -67,7 +67,11 @@
       "icon": "build/icon.png",
       "extendInfo": {
         "LSUIElement": true
-      }
+      },
+      "files": [
+        "!node_modules/koffi/**",
+        "!node_modules/@koromix/**"
+      ]
     },
     "linux": {
       "target": [
@@ -76,7 +80,11 @@
       ],
       "category": "Utility",
       "icon": "build/icon.png",
-      "maintainer": "Md Abdullah Saeed Khan <67544230+abdullahdmc@users.noreply.github.com>"
+      "maintainer": "Md Abdullah Saeed Khan <67544230+abdullahdmc@users.noreply.github.com>",
+      "files": [
+        "!node_modules/koffi/**",
+        "!node_modules/@koromix/**"
+      ]
     },
     "publish": [
       {
