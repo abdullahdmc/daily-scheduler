@@ -110,7 +110,8 @@ async function sync(state, api, nowDate = new Date()) {
       purge.add(t.id);
       continue;
     }
-    const body = { title: t.title, due: dueOf(t.date), status: t.done ? 'completed' : 'needsAction' };
+    // A task with a deadline uses it as Google's due date, so the phone shows when it's due.
+    const body = { title: t.title, due: dueOf(t.deadline || t.date), status: t.done ? 'completed' : 'needsAction' };
     const r = t.g?.id && remote.get(t.g.id);
     if (r && r.deleted) {
       purge.add(t.id); // deleted on the phone
@@ -126,7 +127,13 @@ async function sync(state, api, nowDate = new Date()) {
     if (remoteUpdated > (t.g.updated || 0) && remoteUpdated > (t.updatedAt || 0)) {
       t.title = r.title || t.title;
       t.done = r.status === 'completed';
-      if (r.due) t.date = r.due.slice(0, 10) < today && !t.done ? today : r.due.slice(0, 10);
+      const due = r.due && r.due.slice(0, 10);
+      if (due && t.deadline) {
+        // Changing the due date on the phone moves the deadline, not the day the task starts.
+        t.deadline = due < t.date ? t.date : due;
+      } else if (due) {
+        t.date = due < today && !t.done ? today : due;
+      }
       t.updatedAt = remoteUpdated;
       t.g.updated = remoteUpdated;
       t.g.syncedAt = now;

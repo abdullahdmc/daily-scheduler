@@ -44,7 +44,8 @@ function rollover(tasks, today, now = Date.now()) {
   let changed = false;
   for (const t of tasks) {
     if (t.deleted || t.routine || t.done || t.date >= today) continue;
-    t.rolledFrom = t.rolledFrom || t.date;
+    // Tasks with a deadline show every day anyway; their countdown says more than "from Oct 11".
+    if (!t.deadline) t.rolledFrom = t.rolledFrom || t.date;
     t.date = today;
     t.updatedAt = now;
     changed = true;
@@ -57,6 +58,22 @@ function rollover(tasks, today, now = Date.now()) {
   return changed;
 }
 
+function daysBetween(a, b) {
+  const [ya, ma, da] = a.split('-').map(Number);
+  const [yb, mb, db] = b.split('-').map(Number);
+  return Math.round((Date.UTC(yb, mb - 1, db) - Date.UTC(ya, ma - 1, da)) / 86400000);
+}
+
+// How close a deadline is: daysLeft (negative when overdue) and the share of the time
+// between setting the deadline and the deadline itself that has passed (0 → 1).
+function deadlineInfo(t, today) {
+  if (!t.deadline) return null;
+  const total = daysBetween(t.deadlineStart || today, t.deadline);
+  const daysLeft = daysBetween(today, t.deadline);
+  const used = total > 0 ? (total - daysLeft) / total : 1;
+  return { deadline: t.deadline, daysLeft, used: Math.max(0, Math.min(1, used)) };
+}
+
 function viewItem(t, today) {
   return {
     id: t.id,
@@ -67,6 +84,7 @@ function viewItem(t, today) {
     time: t.time || null,
     rolledFrom: t.rolledFrom || null,
     done: isDoneOn(t, today),
+    due: deadlineInfo(t, today),
   };
 }
 
@@ -111,6 +129,9 @@ function upsert(tasks, input, nowDate = new Date()) {
   const date = input.date && input.date > today ? input.date : today;
   const until = routine && input.until && input.until >= date ? input.until : null;
   const time = /^\d{2}:\d{2}$/.test(input.time || '') ? input.time : null;
+  // Deadlines are for one-off tasks only, on or after the day the task starts.
+  const deadline = !routine && /^\d{4}-\d{2}-\d{2}$/.test(input.deadline || '') && input.deadline >= date
+    ? input.deadline : null;
 
   let t = input.id && tasks.find((x) => x.id === input.id);
   if (!t) {
@@ -119,8 +140,13 @@ function upsert(tasks, input, nowDate = new Date()) {
   }
   const timeChanged = t.time !== time;
   const dateChanged = t.date !== date;
-  Object.assign(t, { title, routine, date, until, time, updatedAt: now });
-  if (dateChanged && date > today) t.rolledFrom = null;
+  // The colour scale runs from when the deadline was set (or the task's later start day).
+  if (deadline && (t.deadline !== deadline || !t.deadlineStart || (dateChanged && date > today))) {
+    t.deadlineStart = date;
+  }
+  if (!deadline) t.deadlineStart = null;
+  Object.assign(t, { title, routine, date, until, time, deadline, updatedAt: now });
+  if ((dateChanged && date > today) || deadline) t.rolledFrom = null;
   if (timeChanged || dateChanged) {
     // A reminder time that already passed today shouldn't pop up the moment you save it.
     t.remindedOn = time && date === today && timeHasPassed(time, nowDate) ? today : null;
@@ -216,7 +242,7 @@ function importTasks(tasks, incoming) {
 }
 
 module.exports = {
-  ymd, addDays, newId, isActiveRoutine, isDoneOn, belongsToToday, isUpcoming,
+  ymd, addDays, newId, isActiveRoutine, isDoneOn, belongsToToday, isUpcoming, deadlineInfo,
   rollover, todayView, upcomingView, upsert, toggleDone, remove, restore,
   dueReminders, snooze, importTasks,
 };

@@ -18,6 +18,7 @@ const ICON = {
   trash: '<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg>',
   bell: '<svg viewBox="0 0 24 24"><path d="M10 5a2 2 0 1 1 4 0 7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1"/></svg>',
   calendar: '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg>',
+  flag: '<svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>',
 };
 
 let S = null; // state from the main process
@@ -72,9 +73,37 @@ function applyTheme() {
   }
 }
 
+function dueText(due, upcoming) {
+  if (upcoming || due.daysLeft > 7) return `Due ${fmtDate(due.deadline)}`;
+  if (due.daysLeft > 1) return `${due.daysLeft} days left`;
+  if (due.daysLeft === 1) return 'Due tomorrow';
+  if (due.daysLeft === 0) return 'Due today';
+  return due.daysLeft === -1 ? '1 day overdue' : `${-due.daysLeft} days overdue`;
+}
+
+function dueBadge(k, upcoming) {
+  if (!k.due) return '';
+  const full = parseYmd(k.due.deadline).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  // Colours are set in paintDeadlines(): the page's security policy blocks inline styles.
+  return `<span class="badge due" data-used="${k.done ? '' : k.due.used}" data-over="${k.due.daysLeft < 0 ? 1 : 0}" title="Deadline: ${esc(full)}">`
+    + `${ICON.flag}${esc(dueText(k.due, upcoming))}</span>`;
+}
+
+// Green when the deadline is set, yellow halfway, red on the day (and when overdue).
+function paintDeadlines() {
+  for (const b of document.querySelectorAll('.badge.due')) {
+    if (b.dataset.used === '') continue; // finished tasks keep the plain badge
+    const hue = b.dataset.over === '1' ? 0 : Math.round(120 * (1 - Number(b.dataset.used)));
+    b.style.background = `hsl(${hue}, 75%, ${b.dataset.over === '1' ? 80 : 86}%)`;
+    b.style.borderColor = `hsl(${hue}, 60%, 40%)`;
+    b.style.color = `hsl(${hue}, 80%, 22%)`;
+  }
+}
+
 function rowHtml(k, upcoming) {
   const hidden = ui.editing === k.id ? ' hidden' : '';
   const badges = [
+    dueBadge(k, upcoming),
     k.routine && !upcoming ? `<span class="mini" title="Routine">${ICON.repeat}</span>` : '',
     k.rolledFrom ? `<span class="badge" title="Not finished on ${esc(fmtDate(k.rolledFrom))}">from ${esc(fmtDate(k.rolledFrom))}</span>` : '',
     upcoming ? `<span class="badge">${k.routine ? 'Daily from ' : ''}${esc(fmtDate(k.date))}</span>` : '',
@@ -120,6 +149,7 @@ function render() {
     const row = document.querySelector(`[data-row="${CSS.escape(ui.editing)}"]`);
     if (row) row.after($('form'));
   }
+  paintDeadlines();
   renderSettings();
 }
 
@@ -164,6 +194,9 @@ function formChips() {
   $('dt').classList.toggle('on', !!s.date);
   $('ut').hidden = !s.routine;
   $('ut').classList.toggle('on', !!s.until);
+  $('dl').hidden = !!s.routine; // deadlines are for one-off tasks
+  $('dl').classList.toggle('on', !!s.deadline);
+  $('dll').textContent = s.deadline ? `Due ${fmtDate(s.deadline)}` : 'Deadline';
   $('tm').classList.toggle('on', !!s.time);
   $('dtl').textContent = s.date ? `${s.routine ? 'From ' : ''}${fmtDate(s.date)}` : s.routine ? 'From today' : 'Today';
   $('utl').textContent = s.until ? `Until ${fmtDate(s.until)}` : 'No end';
@@ -172,6 +205,8 @@ function formChips() {
   if (s.routine) {
     hint = `Shows every day${s.date ? ` starting ${fmtDate(s.date)}` : ''}${s.until ? ` until ${fmtDate(s.until)}` : ''}`;
     if (s.time) hint += `, reminder at ${fmtTime(s.time)}`;
+  } else if (s.deadline) {
+    hint = `Shows every day${s.date ? ` from ${fmtDate(s.date)}` : ''} until it's done, due ${fmtDate(s.deadline)}`;
   } else if (s.date) {
     hint = `Hidden in Upcoming until ${fmtDate(s.date)}`;
   }
@@ -182,8 +217,8 @@ function openForm(id) {
   const k = id ? [...S.items, ...S.upcoming].find((x) => x.id === id) : null;
   ui.editing = k ? k.id : 'new';
   ui.sel = k
-    ? { routine: k.routine, date: k.date > S.today ? k.date : null, until: k.until, time: k.time }
-    : { routine: false, date: null, until: null, time: null };
+    ? { routine: k.routine, date: k.date > S.today ? k.date : null, until: k.until, time: k.time, deadline: k.due ? k.due.deadline : null }
+    : { routine: false, date: null, until: null, time: null, deadline: null };
   ui.calMode = null;
   $('inp').value = k ? k.title : '';
   $('addl').textContent = k ? 'Save' : 'Add';
@@ -207,7 +242,7 @@ async function submitForm() {
   if (!title) { $('err').hidden = false; $('inp').focus(); return; }
   const s = ui.sel;
   const id = ui.editing !== 'new' ? ui.editing : undefined;
-  await window.api.saveTask({ id, title, routine: !!s.routine, date: s.date || S.today, until: s.routine ? s.until : null, time: s.time });
+  await window.api.saveTask({ id, title, routine: !!s.routine, date: s.date || S.today, until: s.routine ? s.until : null, time: s.time, deadline: s.routine ? null : s.deadline });
   if (id) toast('Saved');
   else if (s.date) toast(`${s.routine ? 'Daily from' : 'Saved for'} ${fmtDate(s.date)}`);
   closeForm();
@@ -217,8 +252,9 @@ function renderCal() {
   const [y, m] = ui.calMonth;
   const first = new Date(y, m, 1);
   $('mlabel').textContent = first.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-  const min = ui.calMode === 'until' ? (ui.sel.date || S.today) : S.today;
-  const selected = ui.calMode === 'until' ? ui.sel.until : (ui.sel.date || S.today);
+  const later = ui.calMode === 'until' || ui.calMode === 'deadline';
+  const min = later ? (ui.sel.date || S.today) : S.today;
+  const selected = later ? ui.sel[ui.calMode] : (ui.sel.date || S.today);
   const lead = (first.getDay() + 6) % 7; // weeks start on Monday
   const days = new Date(y, m + 1, 0).getDate();
   let h = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((x) => `<span class="dow">${x}</span>`).join('');
@@ -229,13 +265,14 @@ function renderCal() {
     h += `<button data-a="day" data-d="${ds}" class="${cls}"${ds < min ? ' disabled' : ''}>${i}</button>`;
   }
   $('grid').innerHTML = h;
-  $('calfoot').hidden = ui.calMode !== 'until';
+  $('calfoot').hidden = !later;
+  $('noend').textContent = ui.calMode === 'deadline' ? 'No deadline' : 'No end date';
 }
 
 function openCal(mode) {
   if (ui.calMode === mode && !$('cal').hidden) { $('cal').hidden = true; ui.calMode = null; return; }
   ui.calMode = mode;
-  const base = parseYmd((mode === 'until' ? ui.sel.until : ui.sel.date) || ui.sel.date || S.today);
+  const base = parseYmd((mode === 'date' ? ui.sel.date : ui.sel[mode]) || ui.sel.date || S.today);
   ui.calMonth = [base.getFullYear(), base.getMonth()];
   $('tbox').hidden = true;
   $('cal').hidden = false;
@@ -266,7 +303,13 @@ async function act(a, el) {
     case 'plus': openForm(null); break;
     case 'cancel': closeForm(); break;
     case 'add': await submitForm(); break;
-    case 'rt': ui.sel.routine = !ui.sel.routine; if (!ui.sel.routine) ui.sel.until = null; formChips(); break;
+    case 'rt':
+      ui.sel.routine = !ui.sel.routine;
+      if (ui.sel.routine) ui.sel.deadline = null; else ui.sel.until = null;
+      if (ui.calMode === 'deadline' || ui.calMode === 'until') { $('cal').hidden = true; ui.calMode = null; }
+      formChips();
+      break;
+    case 'dl': openCal('deadline'); break;
     case 'dt': openCal('date'); break;
     case 'ut': openCal('until'); break;
     case 'tm':
@@ -286,15 +329,17 @@ async function act(a, el) {
     case 'mnext': { const [y, m] = ui.calMonth; ui.calMonth = m === 11 ? [y + 1, 0] : [y, m + 1]; renderCal(); break; }
     case 'day': {
       const ds = el.dataset.d;
-      if (ui.calMode === 'until') ui.sel.until = ds;
+      if (ui.calMode === 'until' || ui.calMode === 'deadline') ui.sel[ui.calMode] = ds;
       else {
         ui.sel.date = ds === S.today ? null : ds;
-        if (ui.sel.until && ui.sel.until < (ui.sel.date || S.today)) ui.sel.until = null;
+        const start = ui.sel.date || S.today;
+        if (ui.sel.until && ui.sel.until < start) ui.sel.until = null;
+        if (ui.sel.deadline && ui.sel.deadline < start) ui.sel.deadline = null;
       }
       $('cal').hidden = true; ui.calMode = null; formChips();
       break;
     }
-    case 'noend': ui.sel.until = null; $('cal').hidden = true; ui.calMode = null; formChips(); break;
+    case 'noend': ui.sel[ui.calMode === 'deadline' ? 'deadline' : 'until'] = null; $('cal').hidden = true; ui.calMode = null; formChips(); break;
     case 'gin': await window.api.googleSignIn(); break;
     case 'gout': await window.api.googleSignOut(); break;
     case 'gsync': await window.api.googleSync(); break;

@@ -121,3 +121,18 @@ test('recreates the list if it was deleted on Google', async () => {
   assert.equal(g.lists.size, 1);
   assert.equal(live(g).filter((t) => t.listId === state.google.listId).length, 1);
 });
+
+test('a deadline is sent as the Google due date, and moving it on the phone moves the deadline', async () => {
+  const g = fakeGoogle();
+  const state = { tasks: [], google: {} };
+  const now = new Date('2026-10-12T10:00');
+  const t = T.upsert(state.tasks, { title: 'Report', deadline: '2026-10-16' }, now);
+  await sync(state, g.api, now);
+  assert.equal(g.tasks.get(t.g.id).due, '2026-10-16T00:00:00.000Z');
+
+  g.advance(1e12);
+  g.phoneEdit(t.g.id, { due: '2026-10-20T00:00:00.000Z' });
+  await sync(state, g.api, now);
+  assert.equal(t.deadline, '2026-10-20');
+  assert.equal(t.date, '2026-10-12'); // still shows today
+});

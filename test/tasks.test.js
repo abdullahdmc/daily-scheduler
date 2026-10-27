@@ -118,3 +118,57 @@ test('import keeps the newer copy and skips invalid rows', () => {
   assert.equal(n, 2);
   assert.deepEqual(tasks.map((x) => x.title).sort(), ['Fresh', 'Newer']);
 });
+
+test('a task with a deadline shows every day until done, without a "from" badge', () => {
+  const tasks = [];
+  const t = T.upsert(tasks, { title: 'Report', deadline: '2026-10-16' }, at('2026-10-12T10:00'));
+  for (const d of ['2026-10-13', '2026-10-14', '2026-10-16', '2026-10-18']) {
+    T.rollover(tasks, d);
+    const v = T.todayView(tasks, d);
+    assert.equal(v.length, 1, d);
+    assert.equal(v[0].rolledFrom, null);
+  }
+  T.toggleDone(tasks, t.id, at('2026-10-18T09:00'));
+  T.rollover(tasks, '2026-10-19');
+  assert.equal(T.todayView(tasks, '2026-10-19').length, 0);
+});
+
+test('deadline colour scale runs from when it was set to the deadline', () => {
+  const tasks = [];
+  const t = T.upsert(tasks, { title: 'Report', deadline: '2026-10-16' }, at('2026-10-12T10:00'));
+  const info = (d) => T.deadlineInfo(t, d);
+  assert.deepEqual(info('2026-10-12'), { deadline: '2026-10-16', daysLeft: 4, used: 0 });
+  assert.equal(info('2026-10-14').used, 0.5);
+  assert.equal(info('2026-10-16').used, 1);
+  assert.equal(info('2026-10-18').daysLeft, -2);
+  assert.equal(info('2026-10-18').used, 1);
+  // Due on the day it's added: red straight away.
+  const same = T.upsert(tasks, { title: 'Now', deadline: '2026-10-12' }, at('2026-10-12T10:00'));
+  assert.equal(T.deadlineInfo(same, '2026-10-12').used, 1);
+});
+
+test('a future task with a deadline starts its scale on its start day', () => {
+  const tasks = [];
+  const t = T.upsert(tasks, { title: 'Trip prep', date: '2026-10-20', deadline: '2026-10-30' }, at('2026-10-12T10:00'));
+  assert.equal(T.todayView(tasks, '2026-10-12').length, 0);
+  assert.equal(T.upcomingView(tasks, '2026-10-12')[0].due.deadline, '2026-10-30');
+  assert.equal(T.deadlineInfo(t, '2026-10-25').used, 0.5);
+});
+
+test('deadlines are dropped for routines and when earlier than the start day', () => {
+  const tasks = [];
+  const r = T.upsert(tasks, { title: 'Walk', routine: true, deadline: '2026-10-20' }, at('2026-10-12T10:00'));
+  assert.equal(r.deadline, null);
+  const t = T.upsert(tasks, { title: 'x', date: '2026-10-20', deadline: '2026-10-15' }, at('2026-10-12T10:00'));
+  assert.equal(t.deadline, null);
+});
+
+test('editing a task keeps its deadline scale unless the deadline changes', () => {
+  const tasks = [];
+  const t = T.upsert(tasks, { title: 'Report', deadline: '2026-10-16' }, at('2026-10-12T10:00'));
+  T.rollover(tasks, '2026-10-14');
+  T.upsert(tasks, { id: t.id, title: 'Report v2', deadline: '2026-10-16' }, at('2026-10-14T10:00'));
+  assert.equal(t.deadlineStart, '2026-10-12');
+  T.upsert(tasks, { id: t.id, title: 'Report v2', deadline: '2026-10-20' }, at('2026-10-14T10:00'));
+  assert.equal(t.deadlineStart, '2026-10-14');
+});
