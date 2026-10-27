@@ -64,7 +64,7 @@ svg .fill { fill: currentColor; stroke: none; }
 .chip { font-size: 12px; border: 1px solid var(--ic); border-radius: 12px; padding: 2px 8px; background: transparent; color: var(--tx); cursor: pointer; display: flex; align-items: center; gap: 4px; height: 24px; white-space: nowrap; }
 .chip svg { width: 13px; height: 13px; }
 .chip.on { background: var(--tx); color: var(--bg); border-color: var(--tx); }
-#hint { font-size: 11px; margin-top: 6px; opacity: .85; }
+#hint { font-size: 11px; margin-top: 6px; opacity: .85; white-space: pre-line; }
 #hint:empty { display: none; }
 #tbox { display: flex; margin-top: 8px; align-items: center; gap: 6px; font-size: 12px; flex-wrap: wrap; }
 #tin { height: 26px; padding: 0 4px; }

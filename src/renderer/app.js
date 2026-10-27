@@ -210,7 +210,27 @@ function formChips() {
   } else if (s.date) {
     hint = `Hidden in Upcoming until ${fmtDate(s.date)}`;
   }
+  const extra = ui.dlAuto ? `Deadline picked up from "${ui.dlAuto}"` : ui.dlNote;
+  if (extra) hint = hint ? `${hint}\n${extra}` : extra;
   $('hint').textContent = hint;
+}
+
+// Picks up a deadline from the text, e.g. "by 30 October", unless you've set one yourself.
+function detectDeadline() {
+  if (ui.dlManual) return;
+  const r = !ui.sel.routine && window.findDeadline($('inp').value, S.today);
+  const start = ui.sel.date || S.today;
+  ui.dlNote = '';
+  if (r && r.date && r.date >= start) {
+    ui.sel.deadline = r.date;
+    ui.dlAuto = r.text;
+  } else {
+    if (ui.dlAuto) ui.sel.deadline = null;
+    ui.dlAuto = null;
+    if (r && r.past) ui.dlNote = `"${r.text}" has already passed, so no deadline was set`;
+    else if (r && r.date) ui.dlNote = `"${r.text}" is before the task starts, so no deadline was set`;
+  }
+  formChips();
 }
 
 function openForm(id) {
@@ -220,6 +240,10 @@ function openForm(id) {
     ? { routine: k.routine, date: k.date > S.today ? k.date : null, until: k.until, time: k.time, deadline: k.due ? k.due.deadline : null }
     : { routine: false, date: null, until: null, time: null, deadline: null };
   ui.calMode = null;
+  // A deadline that's already set counts as your own choice, so typing won't change it.
+  ui.dlManual = !!ui.sel.deadline;
+  ui.dlAuto = null;
+  ui.dlNote = '';
   $('inp').value = k ? k.title : '';
   $('addl').textContent = k ? 'Save' : 'Add';
   $('cal').hidden = true;
@@ -307,6 +331,8 @@ async function act(a, el) {
       ui.sel.routine = !ui.sel.routine;
       if (ui.sel.routine) ui.sel.deadline = null; else ui.sel.until = null;
       if (ui.calMode === 'deadline' || ui.calMode === 'until') { $('cal').hidden = true; ui.calMode = null; }
+      if (ui.sel.routine) ui.dlAuto = null;
+      detectDeadline();
       formChips();
       break;
     case 'dl': openCal('deadline'); break;
@@ -329,17 +355,22 @@ async function act(a, el) {
     case 'mnext': { const [y, m] = ui.calMonth; ui.calMonth = m === 11 ? [y + 1, 0] : [y, m + 1]; renderCal(); break; }
     case 'day': {
       const ds = el.dataset.d;
-      if (ui.calMode === 'until' || ui.calMode === 'deadline') ui.sel[ui.calMode] = ds;
+      if (ui.calMode === 'deadline') { ui.sel.deadline = ds; ui.dlManual = true; ui.dlAuto = null; ui.dlNote = ''; }
+      else if (ui.calMode === 'until') ui.sel.until = ds;
       else {
         ui.sel.date = ds === S.today ? null : ds;
         const start = ui.sel.date || S.today;
         if (ui.sel.until && ui.sel.until < start) ui.sel.until = null;
         if (ui.sel.deadline && ui.sel.deadline < start) ui.sel.deadline = null;
+        detectDeadline();
       }
       $('cal').hidden = true; ui.calMode = null; formChips();
       break;
     }
-    case 'noend': ui.sel[ui.calMode === 'deadline' ? 'deadline' : 'until'] = null; $('cal').hidden = true; ui.calMode = null; formChips(); break;
+    case 'noend':
+      if (ui.calMode === 'deadline') { ui.sel.deadline = null; ui.dlManual = true; ui.dlAuto = null; ui.dlNote = ''; }
+      else ui.sel.until = null;
+      $('cal').hidden = true; ui.calMode = null; formChips(); break;
     case 'gin': await window.api.googleSignIn(); break;
     case 'gout': await window.api.googleSignOut(); break;
     case 'gsync': await window.api.googleSync(); break;
@@ -376,7 +407,7 @@ note.addEventListener('change', (e) => {
   const k = e.target.dataset.set;
   if (k) window.api.setSettings({ [k]: e.target.checked });
 });
-$('inp').addEventListener('input', () => { $('err').hidden = true; });
+$('inp').addEventListener('input', () => { $('err').hidden = true; detectDeadline(); });
 $('inp').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') submitForm();
   if (e.key === 'Escape') closeForm();

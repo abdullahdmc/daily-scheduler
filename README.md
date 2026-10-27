@@ -8,7 +8,7 @@ A small sticky note for your desktop that shows today's tasks. It opens when you
 
 - **Today only:** the list shows tasks for today plus your routines. Tasks for later dates stay hidden under **Upcoming**.
 - **Routines:** tasks that show up every day, from a start date you choose, with an optional end date.
-- **Deadlines:** give a task a deadline and it shows every day until you finish it, with a countdown like "3 days left". The countdown turns from green through yellow to red as the deadline gets closer.
+- **Deadlines:** give a task a deadline and it shows every day until you finish it, with a countdown like "3 days left". The countdown turns from green through yellow to red as the deadline gets closer. Tasks without a deadline work as before. If you type a date, like "by 30 October", "Oct 30, 2027", "tomorrow" or "by Friday", the deadline fills in by itself. You can change or remove it.
 - **Progress bar:** goes from red when nothing's done to green when everything's done.
 - **Roll-over:** unfinished tasks move to the next day, marked with the day they came from.
 - **Reminders:** a pop-up at the time you set, with **Mark done** and **Snooze 10 min**. If your computer was off or asleep, missed reminders show as soon as it's back.
